@@ -2,7 +2,6 @@ var test = require('tape');
 var err = require('../src/index');
 var errorHandler = err.errorHandler;
 
-
 test('Valid property name function', function(t){
 	t.plan(2);
 	//should return true for valid properties and false for invalid props.
@@ -16,7 +15,6 @@ test('Valid property name function', function(t){
 		t.pass('Should throw an error');
 	}
 });
-
 
 test('Valid properties function', function(t){
 	t.plan(4);
@@ -48,7 +46,6 @@ test('Valid properties function', function(t){
 
 });
 
-
 test('Valid error parameter function', function(t){
 	t.plan(9);
 
@@ -68,7 +65,6 @@ test('Valid error parameter function', function(t){
 	t.equal(err.validErrorParameter("string"),  true);
 });
 
-
 test('Instantiates and returns a custom error object', function(t){
 	t.plan(2);
 
@@ -85,22 +81,16 @@ test('Instantiates and returns a custom error object', function(t){
 		t.pass('Should throw an error');
 	}
 });
-
-
+	
 test('Determine error properties are added', function(t){
-	t.plan(4);
+	t.plan(3);
 
 	var errObj = errorHandler({type:"test", message:"random message", title:"randTitle"});	
 	//Should return an error object
 	t.equal(errObj.properties.type,  "test");
 	t.equal(errObj.properties.message,  "random message");
 	t.equal(errObj.properties.title,  "randTitle");
-
-	//Should not return invalid properties
-	t.equal(errObj.properties.randomProp,  undefined);
 });
-
-
 
 test('Determine error handling with returnVal function is working', function(t){
 	// This method is used by other get methods
@@ -123,8 +113,7 @@ test('Determine error handling with returnVal function is working', function(t){
 	}
 
 });
-
-
+	
 test('Determine correct callbacks are fired for returnVal function', function(t){
 	// Set up
 	t.plan(2);
@@ -143,7 +132,6 @@ test('Determine correct callbacks are fired for returnVal function', function(t)
 	// Should return empty object value returned from failure callback
 	t.equal(err.returnVal('statusCode', propObj, successCallback, failureCallback), err.emptyErrorProps.statusCode); 
 });
-
 
 test('Determine error methods are returning expected callbacks', function(t){
 	t.plan(12);
@@ -185,7 +173,6 @@ test('Determine error methods are returning expected callbacks', function(t){
 	// Testing getData Method: Should return null as no data property exists
 	t.equal(errorHandler(sampleErrorMessage).getData(),  err.emptyErrorProps.data);
 });
-
 
 test('Username use case test', function(t){
 	t.plan(6);
