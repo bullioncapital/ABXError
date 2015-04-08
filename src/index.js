@@ -1,18 +1,40 @@
-function validProperty(prop, errObj){
+/**
+ * Empty error props is an object with properties to be used if props provided are missing.
+ */
+var emptyErrorProps = {
+	type: null,
+	message: null,
+	statusCode: 999,
+	validationCode: 999,
+	data: null
+};
+
+/**
+ * Determines if prop is a valid property
+ * @param  {string} prop - A prop name;
+ * @param  {object} errObj - An Error object generated from MD2Node;
+ * @return {boolean}
+ */
+function validProperty(prop){
 	var validProps = ['type', 'message', 'title', 'statusCode', 'validationCode', 'data'];
 	return validProps.some(function(item){
-		return prop === item && (!errObj || Object.prototype.hasOwnProperty.call(errObj, prop)) ;
+		return prop === item ;
 	});
 }
 
+/**
+ * Determines if there is at least one valid error property passed in and provides a callback for each valid prop.
+ * @param  {object} errObj - An Error object generated from MD2Node;
+ * @return {boolean}
+ */
 function validProperties(errObj, callback){
 	var atLeastOneValid = false;
 
 	for (var prop in errObj){
-		if ( validProperty(prop, errObj) ){
+		if ( validProperty(prop) && Object.prototype.hasOwnProperty.call(errObj, prop) ){
 			atLeastOneValid = true;
 
-			if (callback){
+			if (typeof callback === 'function'){
 				callback(prop, errObj);
 			}
 		}
@@ -21,11 +43,14 @@ function validProperties(errObj, callback){
 	return atLeastOneValid;
 }
 
+/**
+ * Determines whether passedErr is a legitimate object or string.
+ * @param  {object|string} passedErr - An Error object generated from MD2Node;
+ * @return {boolean}
+ */
 function validErrorInput(passedErr){
-	"use strict";
 	var paramType = typeof passedErr;
 
-	// Allow object literal with at least one valid property or a string. 
 	if (paramType === 'object' && !Array.isArray(passedErr) && passedErr !== null){
 		return validProperties(passedErr);
 	} else if (paramType === 'string' && passedErr.trim().length){
@@ -34,53 +59,80 @@ function validErrorInput(passedErr){
 	return false;
 }
 
+/**
+ * Constructor called by errHandler which provides methods for err props
+ * @param  {string|object} passedErr/String - An Error object generated from MD2Node;
+ */
 function ErrorConstructor(passedErr){
+	this.properties = JSON.parse(JSON.stringify(emptyErrorProps));
+
 	if (!validErrorInput(passedErr)){
-		this.properties = false;
+		throw Error('Incorrect Error Type Passed To Constructor');
 
 	} else if (typeof passedErr === 'string') {
-		this.properties = passedErr;
+		this.properties.type = passedErr;
 
 	} else {
-		this.properties = {};
-
+		// Attach passedErr props to properties object.
 		validProperties(passedErr, function(prop, errObj){
 			this.properties[prop] = errObj[prop];
 		}.bind(this));
 	}
 } 
 
-ErrorConstructor.prototype.returnMessage = function(msgType, callback){
-	if (!this.properties){
-		return 'Incorrect Error Type';
+/**
+ * Used by each get method to return a message
+ * @param  {string} msgType - the type of message to be called;
+ * @param  {object} errObj - the properties object of the constructed error obj
+ * @param  {function} successCallback - function to be called if successful
+ * @param  {function} failureCallback - function to be called if invalid properties
+ * @return {string} - return result of success or failure callback
+ */
+function returnMessage(msgType, errorObj, successCallback, failureCallback){
+	if (typeof msgType === 'string' && validProperty(msgType) && 
+			typeof errorObj === 'object' && validErrorInput(errorObj) && 
+			typeof successCallback === 'function' && typeof failureCallback === 'function'){
+		
+		if ( errorObj[msgType] === emptyErrorProps[msgType] ){
+			return failureCallback( errorObj[msgType] );
 
-	} else if (typeof this.properties === 'string'){
-		return this.properties;
-
-	} else if (!Object.prototype.hasOwnProperty.call(this.properties, msgType)){
-		return msgType + ' field not provided to the errorHandler';
-
-	} else {
-		return callback();
+		}
+		return successCallback( errorObj[msgType] );
+			
 	}
-};
 
+	throw Error("Incorrect Parameters Provided");
+}
 
+/**
+ * Gets type of error and returns it
+ * @return {string} - return result of success or failure callback
+ */
 ErrorConstructor.prototype.getType = function(){
-	return this.returnMessage('type', function(){
-		return this.properties.type;
-	}.bind(this));
+	return returnMessage('type', this.properties, function(msg){
+			return msg;
+		}, function(msg){
+			return msg;
+		});
 };
 
+
+// Instantiate ErrorContstuctor with passed in Error
+/**
+ * Provides a wrapper to Instantiate ErrorConstructor
+ * @param  {string|object} passedErr/String - An Error object generated from MD2Node;
+ * @return {object} - Provides methods to interact with method properties
+ */
 function errorHandler(passedErr){
 	var errHandler = new ErrorConstructor(passedErr);
 	return errHandler;
 }
 
-
 module.exports = {
+	emptyErrorProps : emptyErrorProps,
 	validProperty : validProperty,
 	validProperties : validProperties,
 	validErrorInput : validErrorInput,
-	errorHandler: errorHandler
+	errorHandler: errorHandler,
+	returnMessage: returnMessage
 };
