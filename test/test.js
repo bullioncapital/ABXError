@@ -1,15 +1,14 @@
 var test = require('tape');
-var err = require('../src/index');
-var errorHandler = err.errorHandler;
+var errorHandler = require('../src/index');
 
 test('Valid property name function', function(t){
 	t.plan(2);
 	//should return true for valid properties and false for invalid props.
-	t.equal( err.validPropertyName('message'),  true);
+	t.equal( errorHandler.validPropertyName('message'),  true);
 	
 	//Raise an exception if there is an invalid property name.
 	try {
-		err.validPropertyName('tqdqwt');
+		errorHandler.validPropertyName('tqdqwt');
 		t.fail('Should throw an error');
 	} catch (e) {
 		t.pass('Should throw an error');
@@ -20,25 +19,25 @@ test('Valid properties function', function(t){
 	t.plan(4);
 
 	// Should return true if there is at least one valid property.
-	t.equal(err.validProperties({message:'test'}),  true);
+	t.equal(errorHandler.validProperties({message:'test'}),  true);
 
 	//Raise an exception if there is is an invalid property value.
 	try {
-		err.validProperties({type: 5});
+		errorHandler.validProperties({type: 5});
 		t.fail('Should throw an error - prop val is number, expected string');
 	} catch (e) {
 		t.pass('Should throw an error - prop val is number, expected string');
 	}
 
 	try {
-		err.validProperties({statusCode: '55'});
+		errorHandler.validProperties({statusCode: '55'});
 		t.fail('Should throw an error - prop val is string, expected number');
 	} catch (e) {
 		t.pass('Should throw an error - prop val is string, expected number');
 	}
 
 	try {
-		err.validProperties({data: 'string'});
+		errorHandler.validProperties({data: 'string'});
 		t.fail('Should throw an error - prop val is string, expected object');
 	} catch (e) {
 		t.pass('Should throw an error - prop val is string, expected object');
@@ -51,18 +50,18 @@ test('Valid error parameter function', function(t){
 
 	// Check Invalid Error Format - Must not contain null, undefined, numbers, arrays, 
 	// empty objects, objects with invalid properties or empty strings.
-	t.equal(err.validErrorParameter(null),  false);
-	t.equal(err.validErrorParameter(),  false);
-	t.equal(err.validErrorParameter(8),  false);
-	t.equal(err.validErrorParameter([]),  false);
-	t.equal(err.validErrorParameter({}),  false);
-	t.equal(err.validErrorParameter(""),  false);
-	t.equal(err.validErrorParameter(" "),  false);
+	t.equal(errorHandler.validErrorParameter(null),  false);
+	t.equal(errorHandler.validErrorParameter(),  false);
+	t.equal(errorHandler.validErrorParameter(8),  false);
+	t.equal(errorHandler.validErrorParameter([]),  false);
+	t.equal(errorHandler.validErrorParameter({}),  false);
+	t.equal(errorHandler.validErrorParameter(""),  false);
+	t.equal(errorHandler.validErrorParameter(" "),  false);
 
 	//Approved Valid Error Format String - Objects must contain appropriate 
 	//properties and strings must have at least one character
-	t.equal(err.validErrorParameter({type: "string" }),  true);
-	t.equal(err.validErrorParameter("string"),  true);
+	t.equal(errorHandler.validErrorParameter({type: "string" }),  true);
+	t.equal(errorHandler.validErrorParameter("string"),  true);
 });
 
 test('Instantiates and returns a custom error object', function(t){
@@ -98,7 +97,7 @@ test('Determine error handling with returnVal function is working', function(t){
 
 	// No parameters passed, so throw incorrect param error
 	try {
-		err.returnVal();
+		errorHandler.returnVal();
 		t.fail('Should throw an error');
 	} catch (e) {
 		t.pass('Should throw an error');
@@ -106,7 +105,7 @@ test('Determine error handling with returnVal function is working', function(t){
 
 	// incorrect parameters provided, so throw incorrect error passed
 	try {
-		err.returnVal('random', 'te', 'wef', 'wefwef');
+		errorHandler.returnVal('random', 'te', 'wef', 'wefwef');
 		t.fail('Should throw an error');
 	} catch (e) {
 		t.pass('Should throw an error');
@@ -127,10 +126,10 @@ test('Determine correct callbacks are fired for returnVal function', function(t)
 	};
 
 	// Should return success callback method as type prop is present
-	t.equal(err.returnVal('type', propObj, successCallback, failureCallback), 'test worked!');
+	t.equal(errorHandler.returnVal('type', propObj, successCallback, failureCallback), 'test worked!');
 
 	// Should return empty object value returned from failure callback
-	t.equal(err.returnVal('statusCode', propObj, successCallback, failureCallback), err.emptyErrorProps.statusCode); 
+	t.equal(errorHandler.returnVal('statusCode', propObj, successCallback, failureCallback), errorHandler.emptyErrorProps.statusCode); 
 });
 
 test('Determine error methods are returning expected callbacks', function(t){
@@ -146,32 +145,32 @@ test('Determine error methods are returning expected callbacks', function(t){
 	// Testing getType Method: Should return instantiated type property
 	t.equal(errorHandler(sampleErrorType).getType(),  "testType");
 	// Testing getType Method: Should return null as no type property exists
-	t.equal(errorHandler(sampleErrorMessage).getType(),  err.emptyErrorProps.type);
+	t.equal(errorHandler(sampleErrorMessage).getType(),  errorHandler.emptyErrorProps.type);
 
 	// Testing getTitle Method: Should return instantiated type property
 	t.equal(errorHandler(sampleErrorTitle).getTitle(),  "testTitle");
 	// Testing getTitle Method: Should return null as no title property exists
-	t.equal(errorHandler(sampleErrorMessage).getTitle(),  err.emptyErrorProps.title);
+	t.equal(errorHandler(sampleErrorMessage).getTitle(),  errorHandler.emptyErrorProps.title);
 
 	// Testing getMessage Method: Should return instantiated message property
 	t.equal(errorHandler(sampleErrorMessage).getMessage(),  "random message");
 	// Testing getMessage Method: Should return null as no message property exists
-	t.equal(errorHandler(sampleErrorTitle).getMessage(),  err.emptyErrorProps.message);
+	t.equal(errorHandler(sampleErrorTitle).getMessage(),  errorHandler.emptyErrorProps.message);
 
 	// Testing getStatusCode Method: Should return instantiated statusCode property
 	t.equal(errorHandler(sampleErrorStatusCode).getStatusCode(), 234);
 	// Testing getStatusCode Method: Should return default number as no statusCode property exists
-	t.equal(errorHandler(sampleErrorMessage).getStatusCode(), err.emptyErrorProps.statusCode);
+	t.equal(errorHandler(sampleErrorMessage).getStatusCode(), errorHandler.emptyErrorProps.statusCode);
 
 	// Testing getValidationCode Method: Should return instantiated validation property
 	t.equal(errorHandler(sampleErrorValidationCode).getValidationCode(),  234);
 	// Testing getValidationCode Method: Should return default number as no validation property exists
-	t.equal(errorHandler(sampleErrorMessage).getValidationCode(),  err.emptyErrorProps.validationCode);
+	t.equal(errorHandler(sampleErrorMessage).getValidationCode(),  errorHandler.emptyErrorProps.validationCode);
 
 	// Testing getData Method: Should return instantiated data property
 	t.equal(typeof errorHandler(sampleErrorData).getData(),  "object");
 	// Testing getData Method: Should return null as no data property exists
-	t.equal(errorHandler(sampleErrorMessage).getData(),  err.emptyErrorProps.data);
+	t.equal(errorHandler(sampleErrorMessage).getData(),  errorHandler.emptyErrorProps.data);
 });
 
 test('Username use case test', function(t){
@@ -188,9 +187,9 @@ test('Username use case test', function(t){
 	t.equal(errorHandler(errObj).getMessage(),  "Please try another username as this one is taken");
 
 	// Undefined properties should fallback to emptyErrorProps
-	t.equal(errorHandler(errObj).getData(), err.emptyErrorProps.data);
-	t.equal(errorHandler(errObj).getStatusCode(), err.emptyErrorProps.statusCode);
-	t.equal(errorHandler(errObj).getValidationCode(), err.emptyErrorProps.validationCode);
+	t.equal(errorHandler(errObj).getData(), errorHandler.emptyErrorProps.data);
+	t.equal(errorHandler(errObj).getStatusCode(), errorHandler.emptyErrorProps.statusCode);
+	t.equal(errorHandler(errObj).getValidationCode(), errorHandler.emptyErrorProps.validationCode);
 });
 
 

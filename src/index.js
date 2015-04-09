@@ -40,7 +40,7 @@ function validPropertyName(prop){
 }
 
 /**
- * Determines if there is at least one valid error property passed in and provides a callback for each valid prop. The  property is deemed valid if the prop name is returned true by validPropertyName and the prop value has the same type as validErrorTypes or the prop value matches emptyErrorProp.
+ * Determines if there is at least one valid error property passed in and provides a callback for each valid prop. The  property is deemed valid if the prop name is returned true by validPropertyName and the prop value has the same type as validErrorTypes or the prop value matches emptyErrorProps.
  * @param  {object} errObj - An Error object generated from MD2Node;
  * @return {boolean}
  */
@@ -211,11 +211,18 @@ function errorHandler(passedErr){
 	return errHandler;
 }
 
-module.exports = {
-	emptyErrorProps : emptyErrorProps,
-	validPropertyName : validPropertyName,
-	validProperties : validProperties,
-	validErrorParameter : validErrorParameter,
-	errorHandler: errorHandler,
-	returnVal: returnVal
+var attachMethods = {
+	"emptyErrorProps" : emptyErrorProps,
+	"validPropertyName": validPropertyName,
+	"validProperties": validProperties,
+	"validErrorParameter": validErrorParameter,
+	"returnVal": returnVal
 };
+
+for (var prop in attachMethods){
+	if (attachMethods.hasOwnProperty(prop)){
+		errorHandler[prop] = attachMethods[prop];
+	}
+}
+
+module.exports = errorHandler;
