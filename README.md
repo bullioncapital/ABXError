@@ -1,7 +1,7 @@
 # ErrorInterface
 Error Interface for parsing Errors
 
-### ErrorInterface tldr;
+### ErrorInterface tl;dr
 ```js
 	// serverErr provided by server when some form of error occurs.
 	// errorInterface returns an interface obj with methods.
