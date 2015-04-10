@@ -1,15 +1,16 @@
 # ErrorInterface
 Error Interface for parsing Errors
 
-# ErrorInterface tldr;
+### ErrorInterface tldr;
 ```js
 	// serverErr provided by server when some form of error occurs.
-	// Provides methods, success/failure callbacks optional.
+	// errorInterface returns an interface obj with methods.
+	// success/failure callbacks can optionally be provided to methods.
 	// If no callbacks are provided, it simply returns the value.
 	errorInterface(serverErr).getName();
 ```
 
-# ErrorInterface Functionality
+### ErrorInterface Functionality
 ```js
 test('Username use case test', function(t){
 	t.plan(5);
