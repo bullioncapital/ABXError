@@ -1,4 +1,4 @@
-angular.module('Md2').factory('ErrorInterface', [function() {
+angular.module('errorInterface', []).factory('errorInterface', [function() {
 /**
  * Documentation available at: https://github.com/bullioncapital/errorinterface
  * Tests available in Repository
