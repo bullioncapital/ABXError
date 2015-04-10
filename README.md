@@ -72,10 +72,15 @@ Tape: https://github.com/Jam3/jam3-testing-tools#tape
 ```sh
 $ git clone https://github.com/bullioncapital/errorinterface.git
 $ npm install
-$ npm start // Runs JSHint and Tests on file changes
+$ npm start // Runs JSHint/Tests/Builds for Angular on file changes
 ``` 
 
 ### Run tests
 ```
 npm test
+```
+
+### Build for angular
+```
+grunt build //Note: this is not required if you have npm start/grunt/grunt watch running.
 ```

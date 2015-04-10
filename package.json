@@ -11,9 +11,13 @@
   "license": "ISC",
   "devDependencies": {
     "grunt": "~0.4.0",
+    "grunt-contrib-concat": "^0.5.1",
+    "grunt-contrib-copy": "^0.8.0",
     "grunt-contrib-jshint": "*",
     "grunt-contrib-watch": "*",
     "grunt-execute": "^0.2.2",
+    "grunt-file-append": "0.0.6",
+    "grunt-text-replace": "^0.4.0",
     "matchdep": "*",
     "tape": "^4.0.0"
   }

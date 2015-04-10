@@ -1,5 +1,5 @@
 var test = require('tape');
-var errorInterface = require('../src/index');
+var errorInterface = require('../build/index');
 
 /**
  * Typical Use Case Test with explanation

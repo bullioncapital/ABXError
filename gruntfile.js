@@ -9,9 +9,11 @@ module.exports = function(grunt){
 	          	files: [
 	          		'*.js',
 		            '*/*.js',
+		            '*/angular-concat/*.js',
+		            '!index.js',
 		            '!node_modules/*.js',
 	            ],
-	          	tasks: ['jshint', 'execute']
+	          	tasks: ['jshint', 'execute', 'concat', 'replace']
     		}
 		},
 	    pkg: grunt.file.readJSON('package.json'),
@@ -35,9 +37,26 @@ module.exports = function(grunt){
       		target: {
       			src: ['test/test.js']
       		}
+      	},
+      	concat: {
+      		buildFile: {
+      			src : ['build/angular-concat/prepend.js', 'build/index.js', 'build/angular-concat/append.js'],
+      			dest: 'index.js'
+      		}
+      	},
+      	replace: {
+      		moduleToReturn: {
+      			src: ['index.js'],
+      			dest: 'index.js',
+      			replacements: [{
+      				from: "module.exports =",
+      				to: "return"
+      			}]
+      		}
       	}
     });
 
     grunt.registerTask('default', ['watch']);
-    grunt.registerTask('test', ['execute']);
+    grunt.registerTask('test', ['jshint', 'execute']);
+    grunt.registerTask('build', ['jshint', 'execute', 'concat', 'replace']);
 };
