@@ -1,16 +1,41 @@
-# ErrorInterface
-Error Interface for parsing Errors
+# errorInterface
+An Error Interface for parsing Errors
+
+## Using with MetalDesk
+
+### Related to backend error handling:
+https://github.com/bullioncapital/dev/blob/master/coding_conventions.md#error-handling
+
+### Install via bower
+```js
+// include inside bower.json file
+ "error-interface": "git@github.com:bullioncapital/errorinterface.git#master"
+```
+```sh
+bower install
+```
+
+### ErrorInterface dependency injection
+```js
+// add as a module dependency
+var myApp = angular.module("myApp", ["errorInterface"]);
+
+// use in controllers/directives etc.
+myApp.controller("testCtrl", ["$scope", "errorInterface", function($scope, errorInterface)){
+	//use errorInterface
+}]);
+```
 
 ### ErrorInterface tl;dr
 ```js
-	// serverErr provided by server when some form of error occurs.
-	// errorInterface returns an interface obj with methods.
-	// success/failure callbacks can optionally be provided to methods.
-	// If no callbacks are provided, it simply returns the value.
-	errorInterface(serverErr).getName();
+errorInterface(serverErr).getName();
+// serverErr provided by server when some form of error occurs.
+// errorInterface returns an interface obj with methods.
+// success/failure callbacks are optionally provided to methods.
+// If no callbacks are provided, it simply returns the value.
 ```
 
-### ErrorInterface Functionality
+### ErrorInterface Functionality (from test/tests.js file)
 ```js
 test('Username use case test', function(t){
 	t.plan(5);
@@ -59,16 +84,15 @@ test('Username use case test', function(t){
 });
 ```
 
+## Module Development
+
 ### Requirements:
 Node/NPM/Grunt
 
-### Related to backend error handling:
-https://github.com/bullioncapital/dev/blob/master/coding_conventions.md#error-handling
-
-### Tests:
+### Test Suite:
 Tape: https://github.com/Jam3/jam3-testing-tools#tape
 
-### Installation:
+### Developement Installation:
 ```sh
 $ git clone https://github.com/bullioncapital/errorinterface.git
 $ npm install
