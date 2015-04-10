@@ -19,11 +19,11 @@ var errPropList = [{
 		errType: 'string'
 	},{
 		errName: 'statusCode',
-		errDefault: 999, 
+		errDefault: null, 
 		errType: 'number'
 	}, {
 		errName: 'validationCode',
-		errDefault: 999, 
+		errDefault: null, 
 		errType: 'number'
 	}, {
 		errName: 'data',
