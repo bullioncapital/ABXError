@@ -74,7 +74,8 @@ function validProperties(errObj, callback){
 			if(typeof errObj[propName] !== propObj.errType && 
 				errObj[propName] !== propObj.errDefault){
 
-				throw Error("Invalid Property Value On Error Object");
+				throw Error("Invalid Property Value On Error Object: Property Name:" + 
+					propName + ". Val: " + propObj[propName]);
 			}
 
 			valid = true;
@@ -123,7 +124,7 @@ function ErrorConstructor(passedErr){
 	this.properties = getDefault();
 
 	if (!validErrorParameter(passedErr)){
-		throw Error('Incorrect Error Type Passed To Constructor');
+		throw Error('Incorrect Error Type Passed To Constructor: ' + passedErr);
 
 	} else if (typeof passedErr === 'string') {
 		this.properties.type = passedErr;
