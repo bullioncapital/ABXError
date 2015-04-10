@@ -222,13 +222,13 @@ ErrorConstructor.prototype.getData = function(successCallback, failureCallback){
  * @param  {string|object} passedErr/String - An Error object generated from MD2Node;
  * @return {object} - Provides methods to interact with method properties
  */
-function errorHandler(passedErr){
-	var errHandler = new ErrorConstructor(passedErr);
-	return errHandler;
+function errorInterface(passedErr){
+	var interfaceInstance = new ErrorConstructor(passedErr);
+	return interfaceInstance;
 }
 
 /**
- * Attaches methods to errorHandler for testing.
+ * Attaches methods to errorInterface for testing.
  */
 var attachMethods = {
 	"getProp": getProp,
@@ -240,8 +240,8 @@ var attachMethods = {
 
 for (var prop in attachMethods){
 	if (attachMethods.hasOwnProperty(prop)){
-		errorHandler[prop] = attachMethods[prop];
+		errorInterface[prop] = attachMethods[prop];
 	}
 }
 
-module.exports = errorHandler;
+module.exports = errorInterface;
