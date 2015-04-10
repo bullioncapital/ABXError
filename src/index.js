@@ -1,70 +1,83 @@
 /**
- * Holds default properties to use if none provided
+ * Array with name, default val and accepted types of error properties.
  */
-var emptyErrorProps = {
-	type: null,
-	title: null,
-	message: null,
-	statusCode: 999,
-	validationCode: 999,
-	data: null
-};
+var errPropList = [{
+		errName: 'type',
+		errDefault: null, 
+		errType: 'string'
+	}, {
+		errName: 'title',
+		errDefault: null, 
+		errType: 'string'
+	}, {
+		errName: 'message',
+		errDefault: null, 
+		errType: 'string'
+	}, {
+		errName: 'name',
+		errDefault: null, 
+		errType: 'string'
+	},{
+		errName: 'statusCode',
+		errDefault: 999, 
+		errType: 'number'
+	}, {
+		errName: 'validationCode',
+		errDefault: 999, 
+		errType: 'number'
+	}, {
+		errName: 'data',
+		errDefault: null, 
+		errType: 'object'
+}];
 
 /**
- * Expected property value types for error object
- */
-var validErrorTypes = {
-	type: 'string',
-	title: 'string',
-	message: 'string',
-	statusCode: 'number',
-	validationCode: 'number',
-	data: 'object'
-};
-
-/**
- * Determines if prop is a valid property
- * @param  {string} prop - A prop name;
+ * Get Prop Obj determines if the prop exists on the actual object and then determines if the
+ * property is a legitimate error property by looping through errPropList.
+ * @param  {string} propName - A prop name;
  * @param  {object} errObj - An Error object generated from MD2Node;
  * @return {boolean}
  */
-function validPropertyName(prop){
-	var validProps = ['type', 'title', 'message', 'statusCode', 'validationCode', 'data'];
-	var valid = validProps.some(function(item){
-		return prop === item;
-	});
-	if(!valid){
-		throw Error("Invalid Property Name");
+function getProp(propName, errObj){
+	if(errObj && !Object.prototype.hasOwnProperty.call(errObj, propName)){
+		return false;
 	}
-	return true;
+
+	for (var i = 0; i < errPropList.length; i++){
+		if(errPropList[i].errName === propName){
+			return errPropList[i];
+		}
+	}
+
+	throw Error("Invalid Property Name: " + propName);
 }
 
 /**
- * Determines if there is at least one valid error property passed in and provides a callback for each valid prop. The  property is deemed valid if the prop name is returned true by validPropertyName and the prop value has the same type as validErrorTypes or the prop value matches emptyErrorProps.
+ * Determines if there is at least one valid error property passed in and provides a callback for each valid prop. The  property is deemed valid if the prop name is matched by getProp and the prop value has the same type as errType or the prop value matches errDefault.
  * @param  {object} errObj - An Error object generated from MD2Node;
  * @return {boolean}
  */
 function validProperties(errObj, callback){
-	var atLeastOneValid = false;
+	var valid = false;
 
-	for (var prop in errObj){
-		if(Object.prototype.hasOwnProperty.call(errObj, prop) && validPropertyName(prop)){
+	for (var propName in errObj){
+		var propObj = getProp(propName, errObj);
 
-			if(typeof errObj[prop] !== validErrorTypes[prop] && 
-				errObj[prop] !== emptyErrorProps[prop]){
+		if(propObj){
+			if(typeof errObj[propName] !== propObj.errType && 
+				errObj[propName] !== propObj.errDefault){
 
 				throw Error("Invalid Property Value On Error Object");
 			}
 
-			atLeastOneValid = true;
+			valid = true;
 			if (typeof callback === 'function'){
-				callback(prop, errObj);
+				callback(propName, errObj);
 			}
-
 		}
 	}
 	
-	return atLeastOneValid;
+	return valid;
 }
 
 /**
@@ -84,11 +97,23 @@ function validErrorParameter(passedErr){
 }
 
 /**
+ * Creates a copy of default properties in errPropList.
+ * @return {object}
+ */
+function getDefault() {
+	var defaultObj = {};
+	for (var i = 0; i < errPropList.length; i++) {
+		defaultObj[errPropList[i].errName] = errPropList[i].errDefault;
+	}
+	return defaultObj;
+}
+
+/**
  * Constructor called by errHandler which provides methods for err props
  * @param  {string|object} passedErr/String - An Error object generated from MD2Node;
  */
 function ErrorConstructor(passedErr){
-	this.properties = JSON.parse(JSON.stringify(emptyErrorProps));
+	this.properties = getDefault();
 
 	if (!validErrorParameter(passedErr)){
 		throw Error('Incorrect Error Type Passed To Constructor');
@@ -112,93 +137,84 @@ function ErrorConstructor(passedErr){
  * @param  {function} failureCallback - function to be called if invalid properties
  * @return {string} - return result of success or failure callback
  */
-function returnVal(valType, errorObj, successCallback, failureCallback){
-	if (typeof valType === 'string' && validPropertyName(valType) && 
+function returnVal(propName, errorObj, successCallback, failureCallback){
+	if (typeof propName === 'string' && getProp(propName) && 
 			typeof errorObj === 'object' && validProperties(errorObj) && 
 			typeof successCallback === 'function' && 
 			typeof failureCallback === 'function'){
 		
-		if ( errorObj[valType] === emptyErrorProps[valType] ){
-			return failureCallback( errorObj[valType] );
-
+		if ( errorObj[propName] === getProp(propName).errDefault ){
+			return failureCallback( errorObj[propName] );
 		}
-		return successCallback( errorObj[valType] );
 
+		return successCallback( errorObj[propName] );
 	}
 
 	throw Error("Incorrect Parameters Provided");
 }
 
 /**
+ * Default callback to use when get callback is not set
+ * @return {string} - returns the value passed in.
+ */
+function defaultCallback(val){
+	return val;
+}
+
+/**
  * Gets type of error and returns it
  * @return {string} - return result of success or failure callback
  */
-ErrorConstructor.prototype.getType = function(){
-	return returnVal('type', this.properties, function(type){
-			return type;
-		}, function(type){
-			return type;
-		});
+ErrorConstructor.prototype.getType = function(successCallback, failureCallback){
+	return returnVal('type', this.properties, successCallback || defaultCallback, failureCallback || defaultCallback);
 };
 
 /**
  * Gets title of error and returns it
  * @return {string} - return result of success or failure callback
  */
-ErrorConstructor.prototype.getTitle = function(){
-	return returnVal('title', this.properties, function(title){
-			return title;
-		}, function(title){
-			return title;
-		});
+ErrorConstructor.prototype.getTitle = function(successCallback, failureCallback){
+	return returnVal('title', this.properties, successCallback || defaultCallback, failureCallback || defaultCallback);
+};
+
+/**
+ * Gets name of error and returns it
+ * @return {string} - return result of success or failure callback
+ */
+ErrorConstructor.prototype.getName = function(successCallback, failureCallback){
+	return returnVal('name', this.properties, successCallback || defaultCallback, failureCallback || defaultCallback);
 };
 
 /**
  * Gets message of error and returns it
  * @return {string} - return result of success or failure callback
  */
-ErrorConstructor.prototype.getMessage = function(){
-	return returnVal('message', this.properties, function(message){
-			return message;
-		}, function(message){
-			return message;
-		});
+ErrorConstructor.prototype.getMessage = function(successCallback, failureCallback){
+	return returnVal('message', this.properties, successCallback || defaultCallback, failureCallback || defaultCallback);
 };
 
 /**
  * Gets statusCode of error and returns it
  * @return {number} - return result of success or failure callback
  */
-ErrorConstructor.prototype.getStatusCode = function(){
-	return returnVal('statusCode', this.properties, function(statusCode){
-			return statusCode;
-		}, function(statusCode){
-			return statusCode;
-		});
+ErrorConstructor.prototype.getStatusCode = function(successCallback, failureCallback){
+	return returnVal('statusCode', this.properties, successCallback || defaultCallback, failureCallback || defaultCallback);
 };
 
 /**
  * Gets validationCode of error and returns it
  * @return {number} - return result of success or failure callback
  */
-ErrorConstructor.prototype.getValidationCode = function(){
-	return returnVal('validationCode', this.properties, function(validationCode){
-			return validationCode;
-		}, function(validationCode){
-			return validationCode;
-		});
+ErrorConstructor.prototype.getValidationCode = function(successCallback, failureCallback){
+	return returnVal('validationCode', this.properties, successCallback || defaultCallback, failureCallback || defaultCallback);
 };
 
 /**
  * Gets data object of error and returns it
  * @return {object} - return result of success or failure callback
  */
-ErrorConstructor.prototype.getData = function(){
-	return returnVal('data', this.properties, function(data){
-			return data;
-		}, function(data){
-			return data;
-		});
+ErrorConstructor.prototype.getData = function(successCallback, failureCallback){
+	return returnVal('data', this.properties, successCallback || defaultCallback, failureCallback || defaultCallback);
 };
 
 /**
@@ -211,9 +227,12 @@ function errorHandler(passedErr){
 	return errHandler;
 }
 
+/**
+ * Attaches methods to errorHandler for testing.
+ */
 var attachMethods = {
-	"emptyErrorProps" : emptyErrorProps,
-	"validPropertyName": validPropertyName,
+	"getProp": getProp,
+	"errPropList": errPropList,
 	"validProperties": validProperties,
 	"validErrorParameter": validErrorParameter,
 	"returnVal": returnVal
