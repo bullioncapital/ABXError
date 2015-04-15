@@ -78,4 +78,4 @@ npm build // `grunt build` alias
 ```
 
 ## Test Suite:
-Tape: [https://www.npmjs.com/package/tape], [https://testanything.org/]
+Tape: https://www.npmjs.com/package/tape, https://testanything.org/
