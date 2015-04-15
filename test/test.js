@@ -1,5 +1,5 @@
 var test = require('tape');
-var errorInterface = require('../build/index');
+var errorInterface = require('../index');
 
 /**
  * Typical Use Case Test with explanation
@@ -23,9 +23,9 @@ test('Username use case test', function(t){
 	// example: getType will return the type provided in errObj;
 	var type = err.getType();
 
-	// All methods available on the interface object have optional success/failure callbacks. 
+	// All methods available on the interface object have optional success/failure callbacks.
 	// Success callbacks are called when the property was found on the error object.
-	// Failure callbacks are called when the property was not found/set. 
+	// Failure callbacks are called when the property was not found/set.
 	// When no success or failure callbacks are provided, the property val will simply be returned.
 	var successCallback = function(val){
 		return "Err: " + val;
@@ -45,7 +45,7 @@ test('Username use case test', function(t){
 	t.equal(err.getData(null, failureCallback), "Not sure what went wrong!");
 	t.equal(err.getStatusCode(null, failureCallback), "Not sure what went wrong!");
 
-	// Other notes: Including properties that are not valid will throw an exception - this 
+	// Other notes: Including properties that are not valid will throw an exception - this
 	// is to enforce consistency. Valid properties can be found here:
 	// https://github.com/bullioncapital/dev/blob/master/coding_conventions.md#error-handling
 });
@@ -58,7 +58,7 @@ test('Valid property name function', function(t){
 	t.plan(2);
 	//should return true for valid properties and false for invalid props.
 	t.ok( errorInterface.getProp('message'),  "Should return a truthy value");
-	
+
 	//Raise an exception if there is an invalid property name.
 	try {
 		errorInterface.getProp('tqdqwt');
@@ -101,7 +101,7 @@ test('Valid properties function', function(t){
 test('Valid error parameter function', function(t){
 	t.plan(9);
 
-	// Check Invalid Error Format - Must not contain null, undefined, numbers, arrays, 
+	// Check Invalid Error Format - Must not contain null, undefined, numbers, arrays,
 	// empty objects, objects with invalid properties or empty strings.
 	t.equal(errorInterface.validErrorParameter(null),  false);
 	t.equal(errorInterface.validErrorParameter(),  false);
@@ -111,7 +111,7 @@ test('Valid error parameter function', function(t){
 	t.equal(errorInterface.validErrorParameter(""),  false);
 	t.equal(errorInterface.validErrorParameter(" "),  false);
 
-	//Approved Valid Error Format String - Objects must contain appropriate 
+	//Approved Valid Error Format String - Objects must contain appropriate
 	//properties and strings must have at least one character
 	t.equal(errorInterface.validErrorParameter({type: "string" }),  true);
 	t.equal(errorInterface.validErrorParameter("string"),  true);
@@ -133,11 +133,11 @@ test('Instantiates and returns a custom error object', function(t){
 		t.pass('Should throw an error');
 	}
 });
-	
+
 test('Determine error properties are added', function(t){
 	t.plan(3);
 
-	var errObj = errorInterface({type:"test", message:"random message", title:"randTitle"});	
+	var errObj = errorInterface({type:"test", message:"random message", title:"randTitle"});
 	//Should return an error object
 	t.equal(errObj.properties.type,  "test");
 	t.equal(errObj.properties.message,  "random message");
@@ -165,7 +165,7 @@ test('Determine error handling with returnVal function is working', function(t){
 	}
 
 });
-	
+
 test('Determine correct callbacks are fired for returnVal function', function(t){
 	// Set up
 	t.plan(2);
@@ -182,7 +182,7 @@ test('Determine correct callbacks are fired for returnVal function', function(t)
 	t.equal(errorInterface.returnVal('type', propObj, successCallback, failureCallback), 'test worked!');
 
 	// Should return empty object value returned from failure callback
-	t.equal(errorInterface.returnVal('statusCode', propObj, successCallback, failureCallback), errorInterface.getProp('statusCode').errDefault); 
+	t.equal(errorInterface.returnVal('statusCode', propObj, successCallback, failureCallback), errorInterface.getProp('statusCode').errDefault);
 });
 
 test('Determine error methods are returning expected callbacks', function(t){

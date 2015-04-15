@@ -1,40 +1,33 @@
-angular.module('errorInterface', []).factory('errorInterface', [function() {
-/**
- * Documentation available at: https://github.com/bullioncapital/errorinterface
- * Tests available in Repository
- * ONLY MAKE CHANGES TO THIS CODE FROM THE REPOSITORY
- */
-
 /**
  * Array with name, default val and accepted types of error properties.
  */
 var errPropList = [{
 		errName: 'type',
-		errDefault: null, 
+		errDefault: null,
 		errType: 'string'
 	}, {
 		errName: 'title',
-		errDefault: null, 
+		errDefault: null,
 		errType: 'string'
 	}, {
 		errName: 'message',
-		errDefault: null, 
+		errDefault: null,
 		errType: 'string'
 	}, {
 		errName: 'name',
-		errDefault: null, 
+		errDefault: null,
 		errType: 'string'
 	},{
 		errName: 'statusCode',
-		errDefault: null, 
+		errDefault: null,
 		errType: 'number'
 	}, {
 		errName: 'validationCode',
-		errDefault: null, 
+		errDefault: null,
 		errType: 'number'
 	}, {
 		errName: 'data',
-		errDefault: null, 
+		errDefault: null,
 		errType: 'object'
 }];
 
@@ -71,10 +64,10 @@ function validProperties(errObj, callback){
 		var propObj = getProp(propName, errObj);
 
 		if(propObj){
-			if(typeof errObj[propName] !== propObj.errType && 
+			if(typeof errObj[propName] !== propObj.errType &&
 				errObj[propName] !== propObj.errDefault){
 
-				throw Error("Invalid Property Value On Error Object: Property Name:" + 
+				throw Error("Invalid Property Value On Error Object: Property Name:" +
 					propName + ". Val: " + propObj[propName]);
 			}
 
@@ -84,7 +77,7 @@ function validProperties(errObj, callback){
 			}
 		}
 	}
-	
+
 	return valid;
 }
 
@@ -135,7 +128,7 @@ function ErrorConstructor(passedErr){
 			this.properties[prop] = errObj[prop];
 		}.bind(this));
 	}
-} 
+}
 
 /**
  * Used by each get method to return a value
@@ -146,11 +139,11 @@ function ErrorConstructor(passedErr){
  * @return {string} - return result of success or failure callback
  */
 function returnVal(propName, errorObj, successCallback, failureCallback){
-	if (typeof propName === 'string' && getProp(propName) && 
-			typeof errorObj === 'object' && validProperties(errorObj) && 
-			typeof successCallback === 'function' && 
+	if (typeof propName === 'string' && getProp(propName) &&
+			typeof errorObj === 'object' && validProperties(errorObj) &&
+			typeof successCallback === 'function' &&
 			typeof failureCallback === 'function'){
-		
+
 		if ( errorObj[propName] === getProp(propName).errDefault ){
 			return failureCallback( errorObj[propName] );
 		}
@@ -252,5 +245,4 @@ for (var prop in attachMethods){
 	}
 }
 
-return errorInterface;
-}]);
+module.exports = errorInterface;

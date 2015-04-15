@@ -1,5 +1,6 @@
 {
-  "name": "BullionFrontEndErrHandler",
+  "name": "ErrorInterface",
+  "private": true,
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
@@ -11,14 +12,11 @@
   "license": "ISC",
   "devDependencies": {
     "grunt": "~0.4.0",
-    "grunt-contrib-concat": "^0.5.1",
-    "grunt-contrib-copy": "^0.8.0",
-    "grunt-contrib-jshint": "*",
-    "grunt-contrib-watch": "*",
-    "grunt-execute": "^0.2.2",
-    "grunt-file-append": "0.0.6",
-    "grunt-text-replace": "^0.4.0",
-    "matchdep": "*",
+    "grunt-angular-service": "git+https://git@github.com/obibring/grunt-angular-service.git",
+    "grunt-contrib-jshint": "^0.11.1",
+    "grunt-contrib-watch": "^0.6.1",
+    "grunt-tape": "0.0.2",
+    "load-grunt-tasks": "^3.1.0",
     "tape": "^4.0.0"
   }
 }
