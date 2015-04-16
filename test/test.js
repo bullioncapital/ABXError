@@ -4,7 +4,7 @@ var ABXError = require('../index');
 /**
  * Unit Tests
  */
-test('ABXError construction', function(t){
+test('ABXError', function(t){
 	var error = ABXError({
 		type: 'test',
 		title: 'test',
@@ -45,37 +45,32 @@ test('ABXError construction', function(t){
 
 	t.ok(error instanceof ABXError, 'ABXError() should return an instance of ABXError');
 
-	t.equal(error.type, 'test', 'type should equal the provided type');
-	t.equal(error.title, 'test', 'title should equal the provided title');
-	t.equal(error.message, 'test', 'message should equal the provided message');
-	t.equal(error.name, 'test', 'name should equal the provided name');
-	t.equal(error.statusCode, 123, 'statusCode should equal the provided statusCode');
-	t.equal(error.validationCode, 123, 'validationCode should equal the provided validationCode');
-	t.deepEqual(error.data, { 'test': true }, 'data should equal the provided data');
+	t.equal(error.getType(), 'test', 'type should equal the provided type');
+	t.equal(error.getTitle(), 'test', 'title should equal the provided title');
+	t.equal(error.getMessage(), 'test', 'message should equal the provided message');
+	t.equal(error.getName(), 'test', 'name should equal the provided name');
+	t.equal(error.getStatusCode(), 123, 'statusCode should equal the provided statusCode');
+	t.equal(error.getValidationCode(), 123, 'validationCode should equal the provided validationCode');
+	t.deepEqual(error.getData(), { 'test': true }, 'data should equal the provided data');
 
 	var error = ABXError({
-		type: 'test',
-	});
-	t.equal(error.title, '', 'title should equal the default title');
-	t.equal(error.message, '', 'message should equal the default message');
-	t.equal(error.name, '', 'name should equal the default name');
-	t.equal(error.statusCode, 999, 'statusCode should equal the default statusCode');
-	t.equal(error.validationCode, 999, 'validationCode should equal the default validationCode');
-	t.deepEqual(error.data, {}, 'data should equal the default data');
-
-	var error = ABXError({
-		message: 'test',
+		message: 'test'
 	});
 
-	t.equal(error.type, 'System', 'type should equal the default title');
+	t.equal(error.getType(), 'Custom', 'getType() should equal "Custom');
+	t.equal(error.getTitle(), null, 'getTitle() should equal null');
+	t.equal(error.getName(), null, 'getName() should equal null');
+	t.equal(error.getStatusCode(), null, 'getStatusCode() should equal null');
+	t.equal(error.getValidationCode(), null ,'getvalidationCode() shoudl equal null');
+	t.equal(error.getData(), null ,'getData() shoudl equal null');
 
 	t.throws(function() {
 		ABXError({})
-	}, Error, 'should throw because of no valid properties');
+	}, Error, 'should throw because of message is not set');
 
 	t.throws(function() {
 		ABXError({
-			title: 'test',
+			message: 'test',
 			invalid: true
 		})
 	}, Error, 'should throw because of an invalid property');
@@ -83,33 +78,14 @@ test('ABXError construction', function(t){
 	t.end();
 });
 
-test('ABXError usage', function(t){
+test('ABXError options', function(t){
 	var error = ABXError({
-		type: 'type',
-		title: 'title',
 		message: 'message',
-		name: 'name',
-		statusCode: 123,
-		validationCode: 456,
-		data: { 'data': true }
-	});
-
-	// Check that the getter functions work correctly
-	t.equal(error.getType(), 'type', 'should equal type');
-	t.equal(error.getTitle(), 'title', 'should equal title');
-	t.equal(error.getName(), 'name', 'should equal name');
-	t.equal(error.getMessage(), 'message', 'should equal message');
-	t.equal(error.getStatusCode(), 123, 'should equal 123');
-	t.equal(error.getValidationCode(), 456, 'should equal 456');
-	t.deepEqual(error.getData(), {'data': true} , 'should equal {data: true}');
-
-	var error = ABXError({
-		type: 'another type',
 	}, {
 		defaults: {
 			type: 'type',
 			title: 'title',
-			message: 'message',
+			message: 'default message',
 			name: 'name',
 			statusCode: 123,
 			validationCode: 456,
@@ -119,7 +95,7 @@ test('ABXError usage', function(t){
 
 	// Ensure that creating a new error does not affect older errors
 	var unusedError = ABXError({
-		type: 'another type',
+		message: 'another type',
 	}, {
 		defaults: {
 			type: 'unused type',
@@ -133,22 +109,13 @@ test('ABXError usage', function(t){
 	});
 
 	// Check that default values work correctly
+	t.equal(error.getType(), 'type', 'should equal type');
 	t.equal(error.getTitle(), 'title', 'should equal title');
 	t.equal(error.getName(), 'name', 'should equal name');
 	t.equal(error.getMessage(), 'message', 'should equal message');
 	t.equal(error.getStatusCode(), 123, 'should equal 123');
 	t.equal(error.getValidationCode(), 456, 'should equal 456');
 	t.deepEqual(error.getData(), {'data': true} , 'should equal {data: true}');
-
-	var error = ABXError({
-		title: 'another type',
-	}, {
-		defaults: {
-			type: 'type',
-		}
-	});
-
-	t.equal(error.getType(), 'type', 'should equal type');
 
 	t.end();
 });
@@ -165,12 +132,12 @@ test('ABXError.isValid', function(t){
 	}), 'should be a valid ABXError');
 
 	t.ok(ABXError({
-		type: 'test',
+		message: 'test',
 	}), 'should be a valid ABXError');
 
 	t.throws(function(){
 		ABXError({
-			type: 123,
+			message: 123,
 		});
 	}, 'should not be a valid ABXError');
 
@@ -186,7 +153,7 @@ test('ABXError.isValid', function(t){
 
 	t.throws(function(){
 		ABXError({
-			type: 'test',
+			message: 'test',
 			invalid: true,
 		});
 	}, 'should not be a valid ABXError');

@@ -12,13 +12,13 @@ var propTypeList = {
 };
 
 var defaultError = {
-	type: 'System',
-	title: '',
+	type: 'Custom',
+	title: null,
 	message: '',
-	name: '',
-	statusCode: 999,
-	validationCode: 999,
-	data: {}
+	name: null,
+	statusCode: null,
+	validationCode: null,
+	data: null
 };
 
 var defaultOptions = {
@@ -36,10 +36,10 @@ var defaultOptions = {
 function extend (target) {
     for(var i=1; i<arguments.length; ++i) {
         var from = arguments[i];
-        if(typeof from !== 'object') continue;
+        if(!from || typeof from !== 'object') continue;
         for(var j in from) {
             if(from.hasOwnProperty(j)) {
-                target[j] = typeof from[j]==='object' ? extend({}, target[j], from[j]) : from[j];
+                target[j] = (from[j] && typeof from[j]==='object') ? extend({}, target[j], from[j]) : from[j];
             }
         }
     }
@@ -55,24 +55,23 @@ function ABXError(error, options){
 		return new ABXError(error, options);
 	}
 
-	// Check that the correct arguments were provided
+	// Validate the error argument
 	if(['string', 'object'].indexOf(typeof error) === -1) {
 		throw new Error('Required argument "error" is either missing or an invalid type');
-	}
-
-	if (['undefined', 'object'].indexOf(typeof options) === -1){
-		throw new Error('Required argument "options" must either be an object or undefined');
-	}
-
-	if (typeof error === 'string'){
+	} else if (typeof error === 'object' &&	!error.message){
+		throw new Error('Error property "messages" is required');
+	} else if (typeof error === 'string'){
 		console.warn("DEPRECATED: Use of error strings is being removed in favor of the standard error format");
 		error = {
 			message: error
 		};
 	}
 
-	if(Object.keys(error).length === 0){
-		throw new Error('Error object cannot be empty');
+	// Validate the options argument
+	if (['undefined', 'object'].indexOf(typeof options) === -1){
+		throw new Error('Required argument "options" must either be an object or undefined');
+	} else if (typeof options === 'object' &&	(options.defaults || options.propTypes)){
+		console.warn("DEPRECATED: Settings default values and property types should be avoided");
 	}
 
 	this.options = extend({}, defaultOptions, options);
@@ -164,7 +163,9 @@ ABXError.isValid = function(errObj){
 
 	// Check that each key has the correct type
 	while(valid && index < keys.length){
-		valid = (typeof errObj[keys[index]] === propTypeList[keys[index]]);
+		if(errObj[keys[index]] !== null){
+			valid = (typeof errObj[keys[index]] === propTypeList[keys[index]]);
+		}
 		index++;
 	}
 
