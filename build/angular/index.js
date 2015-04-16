@@ -1,5 +1,5 @@
 (function(angular) {
-  angular.module('abx.errors', []).factory('AbxError', [
+  angular.module('abx.errors', []).factory('abxError', [
     function() {
       var injected = {};
       var require = function(dependency) {

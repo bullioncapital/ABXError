@@ -6,7 +6,7 @@ module.exports = function(grunt){
 	grunt.initConfig({
 		ngservice: {
 			index: {
-				name: 'AbxError',
+				name: 'abxError',
 				module: 'abx.errors',
 				defineModule: true,
 				exportStrategy: 'node',
