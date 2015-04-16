@@ -88,7 +88,7 @@ Returns the error name
 
 ### ABXError.isValid(error)
 
-{object} error - Error object to check
+{object} Error object to check
 
 Validates if an object is a valid ABXError object
 
