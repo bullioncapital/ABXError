@@ -1,5 +1,6 @@
 {
-  "name": "ErrorInterface",
+  "name": "abx-error",
   "version": "1.0.5",
-  "main": "build/angular/index.js"
+  "main": "build/angular/index.js",
+  "ignore": []
 }

@@ -62,5 +62,5 @@ module.exports = function(grunt){
 	grunt.registerTask('default', ['watch']);
 	grunt.registerTask('test', ['jshint', 'tape']);
 	grunt.registerTask('build', ['test', 'ngservice:index']);
-	grunt.registerTask('package', ['jshint', 'tape', 'ngservice:index', 'bump']);
+	grunt.registerTask('package', ['build', 'bump']);
 };
