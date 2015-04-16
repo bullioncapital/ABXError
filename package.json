@@ -1,7 +1,7 @@
 {
   "name": "ErrorInterface",
   "private": true,
-  "version": "1.0.1",
+  "version": "1.0.3",
   "description": "",
   "main": "index.js",
   "scripts": {
@@ -13,6 +13,7 @@
   "devDependencies": {
     "grunt": "~0.4.0",
     "grunt-angular-service": "git+https://git@github.com/obibring/grunt-angular-service.git",
+    "grunt-bump": "^0.3.0",
     "grunt-contrib-jshint": "^0.11.1",
     "grunt-contrib-watch": "^0.6.1",
     "grunt-tape": "0.0.2",

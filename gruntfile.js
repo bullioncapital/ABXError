@@ -6,7 +6,7 @@ module.exports = function(grunt){
 	grunt.initConfig({
 		ngservice: {
 			index: {
-				name: 'abxError',
+				name: 'AbxError',
 				module: 'abx.errors',
 				defineModule: true,
 				exportStrategy: 'node',
@@ -18,10 +18,9 @@ module.exports = function(grunt){
 		watch: {
 			js: {
 				files: ['index.js', 'test/test.js'],
-				tasks: ['jshint', 'tape']
+				tasks: ['build']
 			}
 		},
-		pkg: grunt.file.readJSON('package.json'),
 		jshint: {
 			files: 'index.js',
 			options: {
@@ -39,10 +38,29 @@ module.exports = function(grunt){
 				output: 'console'
 			},
 			files: ['test/**/*.js']
-		}
+		},
+		bump: {
+		   options: {
+		     files: ['package.json', 'bower.json'],
+		     updateConfigs: [],
+		     commit: true,
+		     commitMessage: 'Release v%VERSION%',
+		     commitFiles: ['-a'],
+		     createTag: true,
+		     tagName: 'v%VERSION%',
+		     tagMessage: 'Version %VERSION%',
+		     push: true,
+		     pushTo: 'upstream',
+		     gitDescribeOptions: '--tags --always --abbrev=1 --dirty=-d',
+		     globalReplace: false,
+		     prereleaseName: false,
+		     regExp: false
+		   }
+		 },
 	});
 
 	grunt.registerTask('default', ['watch']);
 	grunt.registerTask('test', ['jshint', 'tape']);
-	grunt.registerTask('build', ['jshint', 'tape', 'ngservice:index']);
+	grunt.registerTask('build', ['test', 'ngservice:index']);
+	grunt.registerTask('package', ['jshint', 'tape', 'ngservice:index', 'bump']);
 };
