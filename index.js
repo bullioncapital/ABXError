@@ -1,248 +1,174 @@
 /**
- * Array with name, default val and accepted types of error properties.
+ * Error property types
  */
-var errPropList = [{
-		errName: 'type',
-		errDefault: null,
-		errType: 'string'
-	}, {
-		errName: 'title',
-		errDefault: null,
-		errType: 'string'
-	}, {
-		errName: 'message',
-		errDefault: null,
-		errType: 'string'
-	}, {
-		errName: 'name',
-		errDefault: null,
-		errType: 'string'
-	},{
-		errName: 'statusCode',
-		errDefault: null,
-		errType: 'number'
-	}, {
-		errName: 'validationCode',
-		errDefault: null,
-		errType: 'number'
-	}, {
-		errName: 'data',
-		errDefault: null,
-		errType: 'object'
-}];
+var propTypeList = {
+	type: 'string',
+	title: 'string',
+	message: 'string',
+ 	name: 'string',
+ 	statusCode: 'number',
+ 	validationCode: 'number',
+	data: 'object'
+};
+
+var defaultError = {
+	type: 'System',
+	title: '',
+	message: '',
+	name: '',
+	statusCode: 999,
+	validationCode: 999,
+	data: {}
+};
+
+var defaultOptions = {
+	defaults: defaultError,
+	propTypes: propTypeList
+};
 
 /**
- * Get Prop Obj determines if the prop exists on the actual object and then determines if the
- * property is a legitimate error property by looping through errPropList.
- * @param  {string} propName - A prop name;
- * @param  {object} errObj - An Error object generated from MD2Node;
- * @return {boolean}
+ * Extends multiple objects together
+ * @private
+ * @param {Object} target of the extend. Use {} if you wish to merge.
+ * @param {Object} source to be extend onto the target. Can be passed multiple times
+ * @returns {Object} target object with the properties of source extend onto it.
  */
-function getProp(propName, errObj){
-	if(errObj && !Object.prototype.hasOwnProperty.call(errObj, propName)){
-		return false;
-	}
-
-	for (var i = 0; i < errPropList.length; i++){
-		if(errPropList[i].errName === propName){
-			return errPropList[i];
-		}
-	}
-
-	throw Error("Invalid Property Name: " + propName);
-}
-
-/**
- * Determines if there is at least one valid error property passed in and provides a callback for each valid prop. The  property is deemed valid if the prop name is matched by getProp and the prop value has the same type as errType or the prop value matches errDefault.
- * @param  {object} errObj - An Error object generated from MD2Node;
- * @return {boolean}
- */
-function validProperties(errObj, callback){
-	var valid = false;
-
-	for (var propName in errObj){
-		var propObj = getProp(propName, errObj);
-
-		if(propObj){
-			if(typeof errObj[propName] !== propObj.errType &&
-				errObj[propName] !== propObj.errDefault){
-
-				throw Error("Invalid Property Value On Error Object: Property Name:" +
-					propName + ". Val: " + propObj[propName]);
-			}
-
-			valid = true;
-			if (typeof callback === 'function'){
-				callback(propName, errObj);
-			}
-		}
-	}
-
-	return valid;
-}
-
-/**
- * Determines whether passedErr is a legitimate object or string.
- * @param  {object|string} passedErr - An Error object generated from MD2Node;
- * @return {boolean}
- */
-function validErrorParameter(passedErr){
-	var paramType = typeof passedErr;
-
-	if (paramType === 'object' && !Array.isArray(passedErr) && passedErr !== null){
-		return validProperties(passedErr);
-	} else if (paramType === 'string' && passedErr.trim().length){
-		return true;
-	}
-	return false;
-}
-
-/**
- * Creates a copy of default properties in errPropList.
- * @return {object}
- */
-function getDefault() {
-	var defaultObj = {};
-	for (var i = 0; i < errPropList.length; i++) {
-		defaultObj[errPropList[i].errName] = errPropList[i].errDefault;
-	}
-	return defaultObj;
+function extend (target) {
+    for(var i=1; i<arguments.length; ++i) {
+        var from = arguments[i];
+        if(typeof from !== 'object') continue;
+        for(var j in from) {
+            if(from.hasOwnProperty(j)) {
+                target[j] = typeof from[j]==='object' ? extend({}, target[j], from[j]) : from[j];
+            }
+        }
+    }
+    return target;
 }
 
 /**
  * Constructor called by errHandler which provides methods for err props
- * @param  {string|object} passedErr/String - An Error object generated from MD2Node;
+ * @param  {string|object} error/String - An Error object generated from MD2Node;
  */
-function ErrorConstructor(passedErr){
-	this.properties = getDefault();
+function ABXError(error, options){
+	if(!(this instanceof ABXError)) {
+		return new ABXError(error, options);
+	}
 
-	if (!validErrorParameter(passedErr)){
-		throw Error('Incorrect Error Type Passed To Constructor: ' + passedErr);
+	// Check that the correct arguments were provided
+	if(['string', 'object'].indexOf(typeof error) === -1) {
+		throw new Error('Required argument "error" is either missing or an invalid type');
+	}
 
-	} else if (typeof passedErr === 'string') {
-		this.properties.type = passedErr;
+	if (['undefined', 'object'].indexOf(typeof options) === -1){
+		throw new Error('Required argument "options" must either be an object or undefined');
+	}
 
+	if (typeof error === 'string'){
+		console.warn("DEPRECATED: Use of error strings is being removed in favor of the standard error format");
+		error = {
+			message: error
+		};
+	}
+
+	if(Object.keys(error).length === 0){
+		throw new Error('Error object cannot be empty');
+	}
+
+	this.options = extend({}, defaultOptions, options);
+	error = extend({}, this.options.defaults, error);
+
+	if(!ABXError.isValid(error)){
+		throw new Error('Incorrect error format: ' + error);
+	}
+
+	extend(this, error);
+}
+
+ABXError.prototype.getProp = function(property){
+	if(!this.options.propTypes[property]){
+		throw Error("Invalid property");
 	} else {
-		// Attach passedErr props to properties object.
-		validProperties(passedErr, function(prop, errObj){
-			this.properties[prop] = errObj[prop];
-		}.bind(this));
+		return this[property];
 	}
-}
-
-/**
- * Used by each get method to return a value
- * @param  {string} valType - the type of value to be called;
- * @param  {object} errObj - the properties object of the constructed error obj
- * @param  {function} successCallback - function to be called if successful
- * @param  {function} failureCallback - function to be called if invalid properties
- * @return {string} - return result of success or failure callback
- */
-function returnVal(propName, errorObj, successCallback, failureCallback){
-	if (typeof propName === 'string' && getProp(propName) &&
-			typeof errorObj === 'object' && validProperties(errorObj) &&
-			typeof successCallback === 'function' &&
-			typeof failureCallback === 'function'){
-
-		if ( errorObj[propName] === getProp(propName).errDefault ){
-			return failureCallback( errorObj[propName] );
-		}
-
-		return successCallback( errorObj[propName] );
-	}
-
-	throw Error("Incorrect Parameters Provided");
-}
-
-/**
- * Default callback to use when get callback is not set
- * @return {string} - returns the value passed in.
- */
-function defaultCallback(val){
-	return val;
-}
+};
 
 /**
  * Gets type of error and returns it
- * @return {string} - return result of success or failure callback
+ * @return {string} - return result of success or failure modifier
  */
-ErrorConstructor.prototype.getType = function(successCallback, failureCallback){
-	return returnVal('type', this.properties, successCallback || defaultCallback, failureCallback || defaultCallback);
+ABXError.prototype.getType = function(){
+	return this.getProp('type');
 };
 
 /**
  * Gets title of error and returns it
- * @return {string} - return result of success or failure callback
+ * @return {string} - return result of success or failure modifier
  */
-ErrorConstructor.prototype.getTitle = function(successCallback, failureCallback){
-	return returnVal('title', this.properties, successCallback || defaultCallback, failureCallback || defaultCallback);
+ABXError.prototype.getTitle = function(){
+	return this.getProp('title');
 };
 
 /**
  * Gets name of error and returns it
- * @return {string} - return result of success or failure callback
+ * @return {string} - return result of success or failure modifier
  */
-ErrorConstructor.prototype.getName = function(successCallback, failureCallback){
-	return returnVal('name', this.properties, successCallback || defaultCallback, failureCallback || defaultCallback);
+ABXError.prototype.getName = function(){
+	return this.getProp('name');
 };
 
 /**
  * Gets message of error and returns it
- * @return {string} - return result of success or failure callback
+ * @return {string} - return result of success or failure modifier
  */
-ErrorConstructor.prototype.getMessage = function(successCallback, failureCallback){
-	return returnVal('message', this.properties, successCallback || defaultCallback, failureCallback || defaultCallback);
+ABXError.prototype.getMessage = function(){
+	return this.getProp('message');
 };
 
 /**
  * Gets statusCode of error and returns it
- * @return {number} - return result of success or failure callback
+ * @return {number} - return result of success or failure modifier
  */
-ErrorConstructor.prototype.getStatusCode = function(successCallback, failureCallback){
-	return returnVal('statusCode', this.properties, successCallback || defaultCallback, failureCallback || defaultCallback);
+ABXError.prototype.getStatusCode = function(){
+	return this.getProp('statusCode');
 };
 
 /**
  * Gets validationCode of error and returns it
- * @return {number} - return result of success or failure callback
+ * @return {number} - return result of success or failure modifier
  */
-ErrorConstructor.prototype.getValidationCode = function(successCallback, failureCallback){
-	return returnVal('validationCode', this.properties, successCallback || defaultCallback, failureCallback || defaultCallback);
+ABXError.prototype.getValidationCode = function(){
+	return this.getProp('validationCode');
 };
 
 /**
  * Gets data object of error and returns it
- * @return {object} - return result of success or failure callback
+ * @return {object} - return result of success or failure modifier
  */
-ErrorConstructor.prototype.getData = function(successCallback, failureCallback){
-	return returnVal('data', this.properties, successCallback || defaultCallback, failureCallback || defaultCallback);
+ABXError.prototype.getData = function(){
+	return this.getProp('data');
 };
 
-/**
- * Provides a wrapper to Instantiate ErrorConstructor
- * @param  {string|object} passedErr/String - An Error object generated from MD2Node;
- * @return {object} - Provides methods to interact with method properties
- */
-function errorInterface(passedErr){
-	var interfaceInstance = new ErrorConstructor(passedErr);
-	return interfaceInstance;
-}
 
 /**
- * Attaches methods to errorInterface for testing.
+ * Determines if there is at least one valid error property passed in and provides a modifier for each valid prop. The  property is deemed valid if the prop name is matched by getProp and the prop value has the same type as type or the prop value matches default.
+ * @param  {object} errObj - An Error object generated from MD2Node;
+ * @return {boolean}
  */
-var attachMethods = {
-	"getProp": getProp,
-	"errPropList": errPropList,
-	"validProperties": validProperties,
-	"validErrorParameter": validErrorParameter,
-	"returnVal": returnVal
-};
+ABXError.isValid = function(errObj){
+	var index = 0;
+	var keys = Object.keys(propTypeList);
 
-for (var prop in attachMethods){
-	if (attachMethods.hasOwnProperty(prop)){
-		errorInterface[prop] = attachMethods[prop];
+	// Check that there are the same number of keys
+	var valid = keys.length === Object.keys(errObj).length;
+
+	// Check that each key has the correct type
+	while(valid && index < keys.length){
+		valid = (typeof errObj[keys[index]] === propTypeList[keys[index]]);
+		index++;
 	}
-}
 
-module.exports = errorInterface;
+	return valid;
+};
+
+module.exports = ABXError;
